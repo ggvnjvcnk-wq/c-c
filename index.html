@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Spam Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* GIAO DIỆN CHUYÊN NGHIỆP - CHỦ ĐỀ XANH LÁ NHẠT */
+        body { 
+            background: #eafaf1; 
+            color: #2e3b4e; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Container chính */
+        .container { 
+            max-width: 1000px; 
+            padding-top: 30px; 
+            padding-bottom: 30px;
+        }
+
+        /* Thẻ card */
+        .card { 
+            background: #ffffff; 
+            border: 1px solid #c8e6c9; 
+            border-radius: 12px; 
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.08);
+            transition: box-shadow 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.12);
+        }
+        .card-header { 
+            background: #f1f8e9; 
+            border-bottom: 1px solid #c8e6c9; 
+            font-weight: 600;
+            color: #2e7d32;
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        /* Input và Select */
+        .form-control, .form-select { 
+            background: #fafffe; 
+            border: 1px solid #a5d6a7; 
+            color: #2e3b4e;
+            border-radius: 8px;
+        }
+        .form-control:focus, .form-select:focus { 
+            background: #ffffff; 
+            border-color: #4caf50; 
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+        .form-text { color: #5f7161; }
+
+        /* Buttons */
+        .btn-primary { 
+            background: #4caf50; 
+            border: none; 
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        .btn-primary:hover { 
+            background: #43a047; 
+        }
+        .btn-success { 
+            background: #66bb6a; 
+            border: none; 
+            border-radius: 8px;
+        }
+        .btn-success:hover { 
+            background: #4caf50; 
+        }
+        .btn-danger { 
+            background: #ef5350; 
+            border: none; 
+            border-radius: 8px;
+        }
+        .btn-danger:hover { 
+            background: #e53935; 
+        }
+        .btn-outline-secondary { 
+            border-color: #a5d6a7; 
+            color: #2e7d32;
+            border-radius: 8px;
+        }
+        .btn-outline-secondary:hover { 
+            background: #e8f5e9; 
+            color: #1b5e20; 
+            border-color: #66bb6a;
+        }
+
+        /* Task Items */
+        .task-item { 
+            background: #f9fdf9; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin-bottom: 12px; 
+            border: 1px solid #c8e6c9;
+            border-left: 5px solid #66bb6a;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .task-item .status { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; }
+        .task-item .status.running { color: #2e7d32; }
+        .task-item .status.stopped { color: #e53935; }
+        .task-item .status.idle { color: #9e9e9e; }
+
+        /* Tabs */
+        .tab-content { padding-top: 20px; }
+        .nav-tabs .nav-link { 
+            color: #66bb6a; 
+            border: none; 
+            font-weight: 500;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+        }
+        .nav-tabs .nav-link.active { 
+            background: #ffffff; 
+            color: #2e7d32; 
+            border-bottom: 3px solid #4caf50; 
+        }
+        .nav-tabs .nav-link:hover:not(.active) { 
+            color: #2e7d32; 
+            background-color: #e8f5e9;
+        }
+        .nav-tabs { border-bottom: 2px solid #c8e6c9; }
+
+        /* Khối thông tin */
+        .token-display { 
+            background: #f1f8e9; 
+            border-radius: 8px; 
+            padding: 10px 15px; 
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            font-weight: 500;
+        }
+        .telegram-link { color: #2e7d32; text-decoration: none; font-weight: 600; }
+        .telegram-link:hover { color: #1b5e20; text-decoration: underline; }
+
+        /* File Upload */
+        .file-upload-wrapper { position: relative; overflow: hidden; border-radius: 8px; }
+        .file-upload-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+        /* Auth Container (Đăng nhập/Đăng ký) */
+        #authContainer {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .auth-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(46, 125, 50, 0.15);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid #a5d6a7;
+        }
+        .auth-card h2 {
+            color: #2e7d32;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .auth-card .form-group {
+            margin-bottom: 20px;
+        }
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .auth-switch a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer { 
+            margin-top: 40px; 
+            text-align: center; 
+            color: #5f7161; 
+            font-size: 14px;
+            padding: 15px 0;
+            border-top: 1px solid #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH CONTAINER (Hiện thị đầu tiên) -->
+    <div id="authContainer">
+        <div class="auth-card">
+            <h2><i class="fas fa-robot me-2"></i>Discord Manager</h2>
+            
+            <!-- Form Đăng nhập -->
+            <form id="loginFormAuth">
+                <div class="form-group">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input type="text" class="form-control" id="loginUsernameAuth" placeholder="Nhập tên đăng nhập" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" id="loginPasswordAuth" placeholder="Nhập mật khẩu" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                </button>
+                <div class="auth-switch">
+                    Chưa có tài khoản? <a id="showRegister">Đăng ký ngay</a>
+                </div>
+            </form>
+
+            <!-- Form Đăng ký (Ẩn mặc định) -->
+            <form id="registerFormAuth" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <input type="text" class="form-control" id="regUsernameAuth" placeholder="Tạo tên đăng nhập" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" id="regPasswordAuth" placeholder="Tạo mật khẩu" required>
+                </div>
+                <button type="submit" class="btn btn-success w-100 py-2 mt-2">
+                    <i class="fas fa-user-plus me-2"></i>Đăng ký
+                </button>
+                <div class="auth-switch">
+                    Đã có tài khoản? <a id="showLogin">Đăng nhập</a>
+                </div>
+            </form>
+            
+            <div id="authStatus" class="mt-3 text-center"></div>
+        </div>
+    </div>
+
+    <!-- APP CONTAINER (Ẩn cho đến khi đăng nhập thành công) -->
+    <div id="appContainer" class="container" style="display: none;">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="color: #2e7d32; font-weight: 700;"><i class="fas fa-robot me-2"></i>Discord Spam Manager</h2>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-success me-3 py-2 px-3" id="userDisplay">User</span>
+                <button class="btn btn-sm btn-outline-secondary" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt me-1"></i>Thoát
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab">📋 Tasks</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create" type="button" role="tab">➕ Tạo Task</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">⚙️ Cài đặt</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- TAB TASKS -->
+            <div class="tab-pane fade show active" id="tasks" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-list-ul me-2"></i>Danh sách tác vụ</span>
+                        <span id="taskCount" class="badge bg-success">0</span>
+                    </div>
+                    <div class="card-body" id="taskList">
+                        <p class="text-muted text-center my-4">Chưa có tác vụ nào. Hãy tạo tác vụ mới.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CREATE TASK -->
+            <div class="tab-pane fade" id="create" role="tabpanel">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-plus-circle me-2"></i>Tạo tác vụ spam mới</div>
+                    <div class="card-body">
+                        <form id="createTaskForm">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên tác vụ</label>
+                                    <input type="text" class="form-control" id="taskName" placeholder="VD: Spam nhóm 1" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Channel ID</label>
+                                    <input type="text" class="form-control" id="channelId" placeholder="ID của kênh" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Token Discord</label>
+                                <input type="text" class="form-control" id="taskToken" placeholder="Nhập token bot/user (Để trống nếu dùng mặc định)">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Nội dung spam</label>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="useFileMode">
+                                    <label class="form-check-label" for="useFileMode">Sử dụng file .txt (mỗi dòng 1 tin nhắn)</label>
+                                </div>
+                                <div id="textMode">
+                                    <textarea class="form-control" id="spamContent" rows="4" placeholder="Nhập nội dung spam..."></textarea>
+                                </div>
+                                <div id="fileMode" style="display:none;">
+                                    <div class="file-upload-wrapper">
+                                        <button class="btn btn-outline-secondary w-100" type="button"><i class="fas fa-upload me-2"></i>Chọn file .txt</button>
+                                        <input type="file" id="fileInput" accept=".txt">
+                                    </div>
+                                    <div id="fileInfo" class="mt-2 text-muted small"></div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label class="form-label">Delay (giây)</label>
+                                    <input type="number" class="form-control" id="delayInput" value="5" min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Chế độ gửi</label>
+                                    <select class="form-select" id="sendMode">
+                                        <option value="line">Từng dòng</option>
+                                        <option value="full">Toàn bộ</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Số lần lặp</label>
+                                    <input type="number" class="form-control" id="loopCount" value="10" min="1">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-play me-2"></i>Tạo và chạy tác vụ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB SETTINGS -->
+            <div class="tab-pane fade" id="settings" role="tabpanel">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-cog me-2"></i>Cài đặt hệ thống</div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Token mặc định</label>
+                            <input type="text" class="form-control" id="defaultToken" placeholder="Nhập token dùng chung cho các task">
+                            <div class="form-text">Nếu để trống, bạn sẽ phải nhập thủ công khi tạo task mới.</div>
+                        </div>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Trạng thái hệ thống</label>
+                                <div class="token-display"><i class="fas fa-circle text-success me-2"></i>Ổn định</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tác vụ đang chạy</label>
+                                <div class="token-display" id="runningTasksCount">0</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: #c8e6c9;">
+                        
+                        <div class="text-center">
+                            <label class="form-label fw-bold">Hỗ trợ kỹ thuật</label>
+                            <br>
+                            <a href="https://t.me/Duc_Anhreal" target="_blank" class="telegram-link fs-5">
+                                <i class="fab fa-telegram-plane me-2"></i>@Duc_Anhreal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>© 2025 - Discord Spam Manager | Developed by <a href="https://t.me/Duc_Anhreal" target="_blank" class="telegram-link">@Duc_Anhreal</a></span>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ================================================================
+    //  CORE LOGIC - QUẢN LÝ XÁC THỰC VÀ TASK
+    // ================================================================
+
+    let currentUser = null;
+    let tasks = [];
+    let taskIntervals = {};
+
+    // --- DOM ELEMENTS ---
+    const authContainer = document.getElementById('authContainer');
+    const appContainer = document.getElementById('appContainer');
+    const loginFormAuth = document.getElementById('loginFormAuth');
+    const registerFormAuth = document.getElementById('registerFormAuth');
+    const authStatus = document.getElementById('authStatus');
+    
+    const taskListEl = document.getElementById('taskList');
+    const taskCountEl = document.getElementById('taskCount');
+    const runningTasksCountEl = document.getElementById('runningTasksCount');
+    const userDisplayEl = document.getElementById('userDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const createForm = document.getElementById('createTaskForm');
+    const taskNameEl = document.getElementById('taskName');
+    const taskTokenEl = document.getElementById('taskToken');
+    const channelIdEl = document.getElementById('channelId');
+    const spamContentEl = document.getElementById('spamContent');
+    const useFileModeEl = document.getElementById('useFileMode');
+    const textModeEl = document.getElementById('textMode');
+    const fileModeEl = document.getElementById('fileMode');
+    const fileInputEl = document.getElementById('fileInput');
+    const fileInfoEl = document.getElementById('fileInfo');
+    const delayInputEl = document.getElementById('delayInput');
+    const sendModeEl = document.getElementById('sendMode');
+    const loopCountEl = document.getElementById('loopCount');
+    const defaultTokenEl = document.getElementById('defaultToken');
+
+    // --- UTILITIES ---
+    function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function showToast(message, type = 'success') {
+        // Tùy chỉnh toast cho phù hợp theme sáng
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed bottom-0 end-0 m-3`;
+        toast.style.zIndex = 9999;
+        toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        toast.innerHTML = `${message} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(toast);
+        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 3000);
+    }
+
+    // --- UI STATE MANAGEMENT ---
+    function showApp() {
+        authContainer.style.display = 'none';
+        appContainer.style.display = 'block';
+        userDisplayEl.innerHTML = `<i class="fas fa-user-circle me-1"></i> ${currentUser.username}`;
+        defaultTokenEl.value = localStorage.getItem('defaultToken') || '';
+        loadTasks();
+    }
+
+    function showAuth() {
+        appContainer.style.display = 'none';
+        authContainer.style.display = 'flex';
+        // Dừng toàn bộ task đang chạy và clear memory
+        Object.keys(taskIntervals).forEach(id => clearInterval(taskIntervals[id]));
+        taskIntervals = {};
+        tasks = [];
+    }
+
+    // --- AUTHENTICATION LOGIC ---
+    function initAuth() {
+        const user = localStorage.getItem('currentUser');
+        if (user) {
+            currentUser = JSON.parse(user);
+            showApp();
+        } else {
+            showAuth();
+        }
+    }
+
+    // Chuyển đổi form Đăng ký / Đăng nhập
+    document.getElementById('showRegister').addEventListener('click', () => {
+        loginFormAuth.style.display = 'none';
+        registerFormAuth.style.display = 'block';
+        authStatus.innerHTML = '';
+    });
+
+    document.getElementById('showLogin').addEventListener('click', () => {
+        registerFormAuth.style.display = 'none';
+        loginFormAuth.style.display = 'block';
+        authStatus.innerHTML = '';
+    });
+
+    loginFormAuth.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('loginUsernameAuth').value.trim();
+        const password = document.getElementById('loginPasswordAuth').value.trim();
+        
+        if (!username || !password) {
+            authStatus.innerHTML = '<div class="alert alert-danger py-2">Vui lòng nhập đầy đủ thông tin</div>';
+            return;
+        }
+
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify({ username: user.username }));
+            currentUser = { username: user.username };
+            authStatus.innerHTML = '<div class="alert alert-success py-2">Đăng nhập thành công!</div>';
+            setTimeout(() => showApp(), 500);
+        } else {
+            authStatus.innerHTML = '<div class="alert alert-danger py-2">Sai thông tin đăng nhập</div>';
+        }
+    });
+
+    registerFormAuth.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('regUsernameAuth').value.trim();
+        const password = document.getElementById('regPasswordAuth').value.trim();
+        
+        if (!username || !password) {
+            authStatus.innerHTML = '<div class="alert alert-danger py-2">Vui lòng nhập đầy đủ thông tin</div>';
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (users.find(u => u.username === username)) {
+            authStatus.innerHTML = '<div class="alert alert-warning py-2">Tên đăng nhập đã tồn tại</div>';
+            return;
+        }
+
+        users.push({ username, password });
+        localStorage.setItem('users', JSON.stringify(users));
+        authStatus.innerHTML = '<div class="alert alert-success py-2">Đăng ký thành công! Vui lòng đăng nhập.</div>';
+        
+        // Tự động chuyển sang tab đăng nhập
+        setTimeout(() => {
+            registerFormAuth.style.display = 'none';
+            loginFormAuth.style.display = 'block';
+            loginFormAuth.reset();
+        }, 1000);
+    });
+
+    logoutBtn.addEventListener('click', function() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        loginFormAuth.reset();
+        registerFormAuth.reset();
+        authStatus.innerHTML = '';
+        showAuth();
+        showToast('Đã đăng xuất tài khoản', 'info');
+    });
+
+    // --- TASK MANAGEMENT LOGIC ---
+    function renderTasks() {
+        if (!tasks || tasks.length === 0) {
+            taskListEl.innerHTML = `<p class="text-muted text-center my-4">Chưa có tác vụ nào. Hãy tạo tác vụ mới.</p>`;
+            taskCountEl.textContent = '0';
+            runningTasksCountEl.textContent = '0';
+            return;
+        }
+        
+        let html = '';
+        let running = 0;
+        
+        tasks.forEach((task) => {
+            const statusClass = task.status === 'running' ? 'running' : (task.status === 'stopped' ? 'stopped' : 'idle');
+            if (task.status === 'running') running++;
+            
+            html += `
+                <div class="task-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong style="color: #2e3b4e;">${task.name}</strong><br>
+                        <small class="text-muted">Channel: <code>${task.channelId}</code> | Delay: ${task.delay}s | Lặp: ${task.loop} lần</small>
+                        <div class="mt-1"><span class="status ${statusClass}">${task.status === 'running' ? '● ĐANG CHẠY' : (task.status === 'stopped' ? '○ ĐÃ DỪNG' : '○ SẴN SÀNG')}</span></div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="startTask('${task.id}')" ${task.status === 'running' ? 'disabled' : ''} title="Chạy">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="stopTask('${task.id}')" ${task.status !== 'running' ? 'disabled' : ''} title="Dừng">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="deleteTask('${task.id}')" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        taskListEl.innerHTML = html;
+        taskCountEl.textContent = tasks.length;
+        runningTasksCountEl.textContent = running;
+    }
+
+    function loadTasks() {
+        try {
+            const stored = localStorage.getItem('tasks');
+            tasks = stored ? JSON.parse(stored) : [];
+            tasks.forEach(t => {
+                if (!t.id) t.id = generateId();
+                t.status = 'idle'; // Reset trạng thái khi tải lại trang
+            });
+            saveTasks();
+            renderTasks();
+        } catch (e) {
+            tasks = [];
+            renderTasks();
+        }
+    }
+
+    function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function startTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task || task.status === 'running') return;
+
+        task.status = 'running';
+        saveTasks();
+        renderTasks();
+        showToast(`Đã khởi chạy: ${task.name}`);
+
+        const lines = task.content ? task.content.split('\n').filter(l => l.trim()) : ['Spam mặc định'];
+        const delay = (task.delay || 5) * 1000;
+        const totalMessages = task.sendMode === 'full' ? task.loop : (task.loop * lines.length);
+        let count = 0;
+
+        const intervalId = setInterval(() => {
+            if (task.status !== 'running' || count >= totalMessages) {
+                clearInterval(intervalId);
+                delete taskIntervals[id];
+                
+                if (task.status === 'running') {
+                    task.status = 'stopped';
+                    saveTasks();
+                    renderTasks();
+                    showToast(`Tác vụ ${task.name} đã hoàn thành`, 'info');
+                }
+                return;
+            }
+
+            let msg = task.sendMode === 'full' ? lines.join('\n') : lines[count % lines.length];
+            console.log(`[${task.name}] Gửi: ${msg.substring(0, 50)}...`);
+            count++;
+        }, delay);
+
+        taskIntervals[id] = intervalId;
+    }
+
+    function stopTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (!task || task.status !== 'running') return;
+
+        task.status = 'stopped';
+        if (taskIntervals[id]) {
+            clearInterval(taskIntervals[id]);
+            delete taskIntervals[id];
+        }
+        saveTasks();
+        renderTasks();
+        showToast(`Đã dừng: ${task.name}`, 'warning');
+    }
+
+    function deleteTask(id) {
+        const index = tasks.findIndex(t => t.id === id);
+        if (index === -1) return;
+        
+        const task = tasks[index];
+        if (task.status === 'running') {
+            if (!confirm(`Tác vụ "${task.name}" đang chạy. Xác nhận xóa?`)) return;
+            stopTask(id);
+        }
+        
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTasks();
+        showToast(`Đã xóa: ${task.name}`, 'info');
+    }
+
+    // --- TASK CREATION ---
+    createForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = taskNameEl.value.trim();
+        const token = taskTokenEl.value.trim() || defaultTokenEl.value.trim();
+        const channel = channelIdEl.value.trim();
+        const useFile = useFileModeEl.checked;
+
+        if (!name || !channel) {
+            showToast('Vui lòng nhập tên và Channel ID', 'danger');
+            return;
+        }
+        if (!token) {
+            showToast('Vui lòng nhập Token hoặc cấu hình Token mặc định', 'danger');
+            return;
+        }
+
+        if (useFile && fileInputEl.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                processTaskCreation(name, token, channel, ev.target.result);
+            };
+            reader.readAsText(fileInputEl.files[0]);
+        } else {
+            processTaskCreation(name, token, channel, spamContentEl.value);
+        }
+    });
+
+    function processTaskCreation(name, token, channel, content) {
+        if (!content || !content.trim()) {
+            showToast('Nội dung spam không được để trống', 'danger');
+            return;
+        }
+
+        const task = {
+            id: generateId(),
+            name: name,
+            token: token,
+            channelId: channel,
+            content: content,
+            delay: parseInt(delayInputEl.value) || 5,
+            sendMode: sendModeEl.value,
+            loop: parseInt(loopCountEl.value) || 1,
+            status: 'idle'
+        };
+
+        tasks.push(task);
+        saveTasks();
+        renderTasks();
+        showToast(`Tạo thành công: ${name}`);
+
+        createForm.reset();
+        fileInfoEl.textContent = '';
+        textModeEl.style.display = 'block';
+        fileModeEl.style.display = 'none';
+        defaultTokenEl.value = localStorage.getItem('defaultToken') || '';
+    }
+
+    // --- UI INTERACTIONS ---
+    useFileModeEl.addEventListener('change', function() {
+        textModeEl.style.display = this.checked ? 'none' : 'block';
+        fileModeEl.style.display = this.checked ? 'block' : 'none';
+    });
+
+    fileInputEl.addEventListener('change', function() {
+        fileInfoEl.textContent = this.files.length > 0 ? `Đã chọn: ${this.files[0].name}` : '';
+    });
+
+    defaultTokenEl.addEventListener('input', function() {
+        localStorage.setItem('defaultToken', this.value);
+    });
+
+    // --- KHỞI CHẠY HỆ THỐNG ---
+    initAuth();
+
+</script>
+</body>
+</html>
